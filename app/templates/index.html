@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display:flex; gap:2rem;">
+  <!-- Personal Collection -->
+  <div style="flex:1;">
+    <h2>My Collection</h2>
+    <form method="get">
+      <input
+        type="text"
+        name="collection_search"
+        placeholder="Search collection…"
+        value="{{ coll_q }}"
+      />
+      <button type="submit">🔍</button>
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Set</th>
+          <th>Qty</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in coll_entries %}
+        <tr>
+          <td>{{ entry.name }}</td>
+          <td>{{ entry.set_name }}</td>
+          <td>{{ entry.quantity }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- All Printings -->
+  <div style="flex:1;">
+    <h2>All Printings</h2>
+    <form method="get">
+      <input
+        type="text"
+        name="printings_search"
+        placeholder="Search printings…"
+        value="{{ print_q }}"
+      />
+      <button type="submit">🔍</button>
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Set Code</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for card in print_entries %}
+        <tr>
+          <td>{{ card.name }}</td>
+          <td>{{ card.setCode }}</td>
+          <td>
+            <form method="post" action="{{ url_for('add_printing') }}">
+              <input type="hidden" name="uuid" value="{{ card.uuid }}" />
+              <button type="submit">Add →</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
