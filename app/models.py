@@ -169,3 +169,37 @@ class CollectionEntry(db.Model):
     uuid                    = db.Column(db.String(36), nullable=False, index=True)
     variations              = db.Column(db.Text)
     watermark               = db.Column(db.Text)
+
+class DeckEntry(db.Model):
+    __tablename__ = 'deck_cards'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    uuid        = db.Column(db.String(36), nullable=False, index=True)
+    name        = db.Column(db.Text, nullable=False)
+    setCode     = db.Column(db.Text)
+    finishes    = db.Column(db.Text)
+    manaValue   = db.Column(db.Float)          # for sorting/grouping
+    quantity    = db.Column(db.Integer, default=0)
+
+class DeckName(db.Model):
+    __tablename__ = 'deck_names'
+    id   = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+
+    # optional backref:
+    entries = db.relationship(
+        'DeckEntry',
+        backref='deck',
+        cascade='all,delete-orphan'
+    )
+
+class DeckEntry(db.Model):
+    __tablename__ = 'deck_entries'
+    id       = db.Column(db.Integer, primary_key=True)
+    deck_id  = db.Column(
+        db.Integer,
+        db.ForeignKey('deck_names.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    uuid     = db.Column(db.String(36), nullable=False, index=True)
+    quantity = db.Column(db.Integer, default=1)
