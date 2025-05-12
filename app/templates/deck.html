@@ -1,77 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Deck Builder</h1>
+<h1 class="page-title">Deck Builder</h1>
 
-<!-- Deck selector + New deck button -->
-<form method="get" style="margin-bottom:1em;">
+<form class="deck-controls" method="get">
   <label>Load Deck:
-    <select name="deck_id" onchange="this.form.submit()">
+    <select name="deck_id" class="form-input" onchange="this.form.submit()">
       {% for d in all_decks %}
-        <option value="{{ d.id }}" {% if d.id==deck.id %}selected{% endif %}>
-          {{ d.name }}
-        </option>
+        <option value="{{ d.id }}" {% if d.id == deck.id %}selected{% endif %}>{{ d.name }}</option>
       {% endfor %}
     </select>
   </label>
-  <button name="action" value="new_deck" formmethod="post">＋ New Deck</button>
+  <button class="button" name="action" value="new_deck" formmethod="post">＋ New Deck</button>
 </form>
 
-<!-- Rename the deck -->
-<form method="post" style="margin-bottom:1em;">
+<form class="deck-controls" method="post">
   <input type="hidden" name="action" value="rename_deck">
   <label>Deck Name:
-    <input name="deck_name" value="{{ deck.name }}">
+    <input class="form-input" name="deck_name" value="{{ deck.name }}">
   </label>
-  <button type="submit">Save</button>
+  <button class="button" type="submit">Save</button>
 </form>
 
-<div style="display:flex; gap:2rem;">
-  <!-- Left: Personal Collection -->
-  <div style="flex:1;">
+<form class="deck-controls" method="get">
+  <input type="hidden" name="deck_id" value="{{ deck.id }}">
+  <input class="form-input" type="text" name="coll_search" placeholder="Search my collection…" value="{{ coll_search }}">
+  <button class="button" type="submit">🔍</button>
+</form>
+
+<div class="flex-layout">
+  <!-- Collection Panel -->
+  <section class="panel">
     <h2>My Collection</h2>
-    <table>
-      <thead>
-        <tr><th>Name</th><th>Set</th><th>Finishes</th><th>Qty</th><th>＋</th></tr>
-      </thead>
+    <table class="table">
+      <thead><tr><th>Name</th><th>Set</th><th>Finishes</th><th>Qty</th><th>＋</th></tr></thead>
       <tbody>
       {% for e in coll_entries %}
         <tr>
-          <td>{{ e.name }}</td>
+          <td class="tooltip" data-title="{{ e.text|default('') }}">{{ e.name }}</td>
           <td>{{ e.setCode }}</td>
           <td>{{ e.finishes }}</td>
           <td>{{ e.quantity }}</td>
           <td>
             <form method="post" action="{{ url_for('deck_add') }}">
               <input type="hidden" name="deck_id" value="{{ deck.id }}">
-              <input type="hidden" name="uuid"    value="{{ e.uuid }}">
-              <button type="submit">＋</button>
+              <input type="hidden" name="uuid" value="{{ e.uuid }}">
+              <button class="button button--small" type="submit">＋</button>
             </form>
           </td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
-  </div>
+  </section>
 
-  <!-- Right: Deck Contents by Mana Value -->
-  <div style="flex:1;">
+  <!-- Deck Panel -->
+  <section class="panel">
     <h2>{{ deck.name }}</h2>
     {% for cost, items in by_cost %}
       <h3>Cost {{ cost }}</h3>
-      <table>
+      <table class="table">
         <thead><tr><th>Name</th><th>Set</th><th>Finishes</th><th>Qty</th><th>－</th></tr></thead>
         <tbody>
         {% for de, card in items %}
           <tr>
-            <td>{{ card.name }}</td>
+            <td class="tooltip" data-title="{{ card.text|default('') }}">{{ card.name }}</td>
             <td>{{ card.setCode }}</td>
             <td>{{ card.finishes }}</td>
             <td>{{ de.quantity }}</td>
             <td>
               <form method="post" action="{{ url_for('deck_remove') }}">
                 <input type="hidden" name="deck_id" value="{{ deck.id }}">
-                <input type="hidden" name="uuid"    value="{{ de.uuid }}">
-                <button type="submit">－</button>
+                <input type="hidden" name="uuid" value="{{ de.uuid }}">
+                <button class="button button--small" type="submit">－</button>
               </form>
             </td>
           </tr>
@@ -79,6 +79,6 @@
         </tbody>
       </table>
     {% endfor %}
-  </div>
+  </section>
 </div>
 {% endblock %}

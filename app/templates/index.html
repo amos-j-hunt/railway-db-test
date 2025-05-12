@@ -1,76 +1,65 @@
 {% extends "base.html" %}
-
 {% block content %}
-<!-- Link to deck builder page -->
-<p><a href="{{ url_for('deck_builder') }}">Go to Deck Builder</a></p>
-<div style="display:flex; gap:2rem;">
-  <!-- Personal Collection -->
-  <div style="flex:1;">
+<div class="flex-layout">
+  <!-- My Collection -->
+  <section class="panel">
     <h2>My Collection</h2>
-    <form method="get">
-      <input
-        type="text"
-        name="collection_search"
-        placeholder="Search collection…"
-        value="{{ coll_q }}"
-      />
-      <button type="submit">🔍</button>
+    <form class="search-form" method="get">
+      <input class="form-input" type="text" name="collection_search" placeholder="Search collection…" value="{{ coll_q }}">
+      <button class="button" type="submit">🔍</button>
     </form>
-    <table>
+    <table class="table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Set</th>
-          <th>Qty</th>
+          <th>Name</th><th>Set</th><th>Qty</th><th>Action</th>
         </tr>
       </thead>
       <tbody>
-        {% for entry in coll_entries %}
+      {% for entry in coll_entries %}
         <tr>
-          <td>{{ entry.name }}</td>
-          <td>{{ entry.set_name }}</td>
+          <td class="tooltip" data-title="{{ entry.text|default('') }}">{{ entry.name }}</td>
+          <td>{{ entry.setCode }}</td>
           <td>{{ entry.quantity }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <!-- All Printings -->
-  <div style="flex:1;">
-    <h2>All Printings</h2>
-    <form method="get">
-      <input
-        type="text"
-        name="printings_search"
-        placeholder="Search printings…"
-        value="{{ print_q }}"
-      />
-      <button type="submit">🔍</button>
-    </form>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Set Code</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for card in print_entries %}
-        <tr>
-          <td>{{ card.name }}</td>
-          <td>{{ card.setCode }}</td>
           <td>
-            <form method="post" action="{{ url_for('add_printing') }}">
-              <input type="hidden" name="uuid" value="{{ card.uuid }}" />
-              <button type="submit">Add →</button>
+            <form method="post" action="{{ url_for('decrement_card') }}">
+              <input type="hidden" name="uuid" value="{{ entry.uuid }}">
+              <button class="button button--small" type="submit">←</button>
             </form>
           </td>
         </tr>
-        {% endfor %}
+      {% endfor %}
       </tbody>
     </table>
-  </div>
+  </section>
+
+  <!-- All Printings -->
+  <section class="panel">
+    <h2>All Printings</h2>
+    <form class="search-form" method="get">
+      <input class="form-input" type="text" name="printings_search" placeholder="Search printings…" value="{{ print_q }}">
+      <button class="button" type="submit">🔍</button>
+    </form>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Set Code</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for card in print_entries %}
+        <tr>
+          <td class="tooltip" data-title="{{ card.text|default('') }}">{{ card.name }}</td>
+          <td>{{ card.setCode }}</td>
+          <td>
+            <form method="post" action="{{ url_for('add_printing') }}">
+              <input type="hidden" name="uuid" value="{{ card.uuid }}">
+              <button class="button button--small" type="submit">＋</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
 </div>
 {% endblock %}

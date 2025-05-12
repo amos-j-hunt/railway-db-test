@@ -1,0 +1,131 @@
+/* Reset basics */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #eef2f7;
+  color: #1a202c;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logo a {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #2b6cb0;
+  text-decoration: none;
+}
+
+.main-nav a {
+  margin-left: 1.5rem;
+  color: #2b6cb0;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.main-nav a:hover {
+  color: #2c5282;
+}
+
+.flex-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  flex: 1;
+}
+
+.search-form,
+.deck-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.25rem;
+}
+
+.button {
+  background-color: #2b6cb0;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.button:hover {
+  background-color: #2c5282;
+}
+
+.button--small {
+  padding: 0.3rem 0.6rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.table thead {
+  background-color: #2b6cb0;
+  color: #fff;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f7fafc;
+}
+
+.table tr:hover {
+  background-color: #ebf8ff;
+}
+
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  white-space: pre-wrap;
+  max-width: 300px;
+  margin-top: 0.25rem;
+  z-index: 10;
+}

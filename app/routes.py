@@ -1,26 +1,32 @@
 from flask import current_app as app, render_template, request, redirect, url_for
-from .models import CollectionEntry, PrintingsCard
-from . import db
+from sqlalchemy import or_
 from collections import defaultdict
-from .models import DeckName, DeckEntry
+from .models import CollectionEntry, PrintingsCard, DeckName, DeckEntry
+from . import db
 
 @app.route("/")
 def index():
     coll_q  = request.args.get("collection_search", "")
     print_q = request.args.get("printings_search", "")
 
-    # filter personal collection
+    # Filter personal collection by name or text
     if coll_q:
         coll_entries = CollectionEntry.query.filter(
-            CollectionEntry.name.ilike(f"%{coll_q}%")
+            or_(
+                CollectionEntry.name.ilike(f"%{coll_q}%"),
+                CollectionEntry.text.ilike(f"%{coll_q}%")
+            )
         ).all()
     else:
         coll_entries = CollectionEntry.query.all()
 
-    # filter & limit printings
+    # Filter all printings by name or text
     if print_q:
         print_entries = PrintingsCard.query.filter(
-            PrintingsCard.name.ilike(f"%{print_q}%")
+            or_(
+                PrintingsCard.name.ilike(f"%{print_q}%"),
+                PrintingsCard.text.ilike(f"%{print_q}%")
+            )
         ).limit(100).all()
     else:
         print_entries = PrintingsCard.query.limit(100).all()
@@ -30,7 +36,7 @@ def index():
         coll_entries=coll_entries,
         print_entries=print_entries,
         coll_q=coll_q,
-        print_q=print_q,
+        print_q=print_q
     )
 
 @app.route("/add_printing", methods=["POST"])
@@ -42,18 +48,21 @@ def add_printing():
     if entry:
         entry.quantity += 1
     else:
-        entry = CollectionEntry(
-            uuid=card.uuid,
-            name=card.name,
-            setCode=card.setCode,
-            finishes=card.finishes,
-            manaCost=card.manaCost,
-            quantity=1,
-        )
+        # Build a dict of all columns except the PK 'id'
+        data = {
+            c.name: getattr(card, c.name)
+            for c in PrintingsCard.__table__.columns
+            if c.name != "id"
+        }
+        data["quantity"] = 1
+
+        # Unpack into your CollectionEntry
+        entry = CollectionEntry(**data)
         db.session.add(entry)
 
     db.session.commit()
     return redirect(url_for("index"))
+
 
 @app.route("/decrement_card", methods=["POST"])
 def decrement_card():
@@ -67,7 +76,7 @@ def decrement_card():
 
 @app.route("/deck", methods=["GET","POST"])
 def deck_builder():
-    # 1️⃣ Handle creating a new deck
+    # Handle New Deck creation
     if request.method == "POST" and request.form.get("action") == "new_deck":
         next_idx = DeckName.query.count() + 1
         deck = DeckName(name=f"Deck {next_idx}")
@@ -75,20 +84,18 @@ def deck_builder():
         db.session.commit()
         return redirect(url_for("deck_builder", deck_id=deck.id))
 
-    # 2️⃣ Determine which deck to show
+    # Determine which deck to show
     deck_id = request.args.get("deck_id", type=int)
     if deck_id:
         deck = DeckName.query.get_or_404(deck_id)
     else:
         deck = DeckName.query.order_by(DeckName.id.desc()).first()
         if not deck:
-            # no decks exist yet → create the first one
-            next_idx = 1
-            deck = DeckName(name=f"Deck {next_idx}")
+            deck = DeckName(name="Deck 1")
             db.session.add(deck)
             db.session.commit()
 
-    # 3️⃣ Handle renaming the current deck
+    # Handle Rename
     if request.method == "POST" and request.form.get("action") == "rename_deck":
         new_name = request.form["deck_name"].strip()
         if new_name:
@@ -96,21 +103,32 @@ def deck_builder():
             db.session.commit()
         return redirect(url_for("deck_builder", deck_id=deck.id))
 
-    # 4️⃣ Fetch data
-    coll_entries = CollectionEntry.query.all()
-    # deck entries
+    # Search collection on deck page
+    coll_search = request.args.get("coll_search", "")
+    if coll_search:
+        coll_entries = CollectionEntry.query.filter(
+            or_(
+                CollectionEntry.name.ilike(f"%{coll_search}%"),
+                CollectionEntry.text.ilike(f"%{coll_search}%")
+            )
+        ).all()
+    else:
+        coll_entries = CollectionEntry.query.all()
+
+    # Deck entries
     deck_entries = DeckEntry.query.filter_by(deck_id=deck.id).all()
     deck_display = []
     for de in deck_entries:
         card = PrintingsCard.query.filter_by(uuid=de.uuid).first()
         deck_display.append((de, card))
-    # group by manaValue
+
+    # Group by manaValue
     by_cost = defaultdict(list)
     for de, card in deck_display:
         cost = card.manaValue or 0
         by_cost[cost].append((de, card))
 
-    # 5️⃣ All saved decks for the dropdown
+    # All saved decks for the dropdown
     all_decks = DeckName.query.order_by(DeckName.id).all()
 
     return render_template(
@@ -119,6 +137,7 @@ def deck_builder():
         deck=deck,
         coll_entries=coll_entries,
         by_cost=sorted(by_cost.items()),
+        coll_search=coll_search
     )
 
 @app.route("/deck/add", methods=["POST"])

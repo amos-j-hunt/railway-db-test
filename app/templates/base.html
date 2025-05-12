@@ -1,8 +1,26 @@
 <!doctype html>
-<html>
-  <head><title>MTG Organizer</title></head>
-  <body>
-    <h1><a href="{{ url_for('index') }}">MTG Organizer</a></h1>
-    {% block content %}{% endblock %}
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Organizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header class="site-header">
+      <h1 class="logo"><a href="{{ url_for('index') }}">MTG Organizer</a></h1>
+      <nav class="main-nav">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('deck_builder') }}">Deck Builder</a>
+      </nav>
+    </header>
+    <main class="site-content">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+      <p>&copy; 2025 MTG Organizer</p>
+    </footer>
+  </div>
+</body>
 </html>
